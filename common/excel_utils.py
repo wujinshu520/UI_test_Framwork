@@ -1,0 +1,60 @@
+# encoding: utf-8
+# @author: wujinshu
+# @file: excel_utils.py
+# @time:2021/10/16 14:47
+# @desc: 读取ExcelUtils 封装
+
+import os
+import xlrd
+from common.config_untils import local_config
+
+
+class ExcelUtils(object):
+    """
+    判断是否excel文件，然后再进行处理， xls  xlsx
+    """
+
+    def __init__(self, excel_path, sheet_name=None):
+        self.excel_path = excel_path
+        self.sheet_name = sheet_name
+        self.sheet_data = self.__get_sheet_data()
+
+    def __get_sheet_data(self):  # 获取sheet
+        worlbook = xlrd.open_workbook(self.excel_path)
+        if self.sheet_name:  # 当sheet_name没有参数，取默认的第一个sheet
+            sheet = worlbook.sheet_by_name(self.sheet_name)
+        else:
+            sheet = worlbook.sheet_by_index(0)
+        return sheet
+
+    @property
+    def get_row_count(self):
+        row_count = self.sheet_data.nrows
+        return row_count
+
+    @property
+    def get_col_count(self):
+        col_count = self.sheet_data.ncols
+        return col_count
+
+    def get_sheet_data_by_list(self):  # 把Excel读取出来，返回列表[[],[],[]]
+        all_excel_data = []
+        for rownum in range(self.get_row_count):  # 行
+            row_excel_data = []
+            for colnum in range(self.get_col_count):  # 列
+                cell_value = self.sheet_data.cell_value(rownum, colnum)
+                row_excel_data.append(cell_value)
+            all_excel_data.append(row_excel_data)
+        return all_excel_data
+
+
+if __name__ == "__main__":
+    current_path = os.path.abspath(os.path.dirname(__file__))
+    test_data_path = os.path.join(
+        current_path, '..', local_config.testdata_path
+    )
+    sheet_infos = ExcelUtils(
+        test_data_path,
+    ).get_sheet_data_by_list()
+    for casedata in sheet_infos:
+        print(casedata)
